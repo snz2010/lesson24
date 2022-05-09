@@ -1,28 +1,29 @@
 import re
-from typing import Any, Tuple, Iterator, Optional
+from typing import Any, Tuple, Iterator, Optional, Union, List
 
-def query_builder(iterable_var: Iterator, cmd: str, val: str) -> Any:
+def query_builder(iterable_var: Union[Iterator[Any], List[Any]], cmd: Optional[str], val: Optional[str]) -> Union[Iterator]:
     result = map(lambda v: v.strip(), iterable_var)
-    if cmd == "filter":
-        result = filter(lambda v, txt=val: txt in v, result)
-    if cmd == "map":
-        arg = int(val)
-        result = map(lambda v, idx=arg: v.split(" ")[idx], result)
     if cmd == "unique":
         result = set(result)
-    if cmd == "sort":
-        reverse = val == "desc"
-        result = sorted(result, reverse=reverse)
-    if cmd == "limit":
-        arg = int(val)
-        result = list(result)[:arg]
-    if cmd == 'regex':
-        regex = re.compile(val)
-        return filter(lambda v: regex.search(v), iterable_var)
+    if val:
+        if cmd == "filter":
+            result = filter(lambda v, txt=val: txt in v, result)
+        elif cmd == 'regex':
+            regex = re.compile(val)
+            return filter(lambda v: regex.search(v), iterable_var)
+        elif cmd == "map":
+            arg = int(val)
+            result = map(lambda v, idx=arg: v.split(" ")[idx], result)
+        elif cmd == "limit":
+            arg = int(val)
+            result = list(result)[:arg]
+        elif cmd == "sort":
+            reverse = val == "desc"
+            result = sorted(result, reverse=reverse)
     return result
 
 
-def get_commands(query: Optional[str]) -> Tuple:
+def get_commands(query: str) -> Tuple:
     cmd = []
     arg = []
     filename = ''
